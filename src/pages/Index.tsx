@@ -1,12 +1,42 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useRef, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChatHeader } from "@/components/ChatHeader";
+import { ChatInput } from "@/components/ChatInput";
+import { ChatMessage } from "@/components/ChatMessage";
+import { EmptyState } from "@/components/EmptyState";
+import { useChat } from "@/hooks/use-chat";
 
 const Index = () => {
+  const { messages, isLoading, sendMessage } = useChat();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="flex h-screen flex-col bg-background">
+      <ChatHeader />
+      
+      <ScrollArea className="flex-1" ref={scrollRef}>
+        {messages.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="mx-auto max-w-3xl py-4">
+            <AnimatePresence mode="popLayout">
+              {messages.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </ScrollArea>
+
+      <ChatInput onSend={sendMessage} isLoading={isLoading} />
     </div>
   );
 };
